@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: answerbutton
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: answerbutton-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATA_DIR
+        value: /var/data
+      - key: PROVIDER_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: MODEL
+        value: openai/gpt-oss-20b
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: REQUIRE_TOKEN_FOR_SOLVE
+        value: false
+      - key: ALLOWED_ORIGINS
+        value: "*"

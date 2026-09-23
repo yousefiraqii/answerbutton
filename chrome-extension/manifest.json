@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "AnswerButton AI Tool",
+  "version": "2.0",
+  "description": "حل الأسئلة بالذكاء الاصطناعي اعتماداً على ملف PDF الخاص بك",
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "80": "icon-80.png"
+  },
+  "permissions": ["storage", "clipboardRead", "clipboardWrite", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": { "default_popup": "popup.html" },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"],
+    "run_at": "document_end"
+  }]
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { width: 260px; padding: 12px; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  h3 { margin: 0 0 10px; font-size: 15px; text-align: center; }
+  label { font-size: 12px; font-weight: 600; display: block; margin-top: 10px; }
+  input { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; box-sizing: border-box; direction: ltr; }
+  button { padding: 9px; cursor: pointer; border: none; border-radius: 6px; width: 100%; margin-top: 10px; font-size: 13px; }
+  .primary { background: #4A90E2; color: white; }
+  .secondary { background: #eee; color: #333; }
+  #status { font-size: 12px; margin-top: 8px; text-align: center; min-height: 18px; }
+  .ok { color: green; } .err { color: red; }
+  .hint { font-size: 11px; color: #666; margin-top: 8px; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <h3>🤖 AnswerButton</h3>
+
+  <label>🔗 رابط السيرفر:</label>
+  <input type="text" id="backendUrl" placeholder="https://answerbutton.onrender.com">
+
+  <label>🔐 توكن الإدارة (اختياري):</label>
+  <input type="password" id="backendToken" placeholder="لو السيرفر محمي فقط">
+
+  <button class="primary" id="saveBtn">💾 حفظ</button>
+  <button class="secondary" id="testBtn">🔌 اختبار الاتصال</button>
+  <button class="secondary" id="settingsBtn">⚙️ الإعدادات والتدريب (PDF)</button>
+
+  <div id="status"></div>
+  <div class="hint">لوكال: <code>http://localhost:3000</code><br>أونلاين: الصق رابط Render بعد الديبلوي.</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
