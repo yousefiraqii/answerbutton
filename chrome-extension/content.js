@@ -34,21 +34,21 @@
     return Promise.resolve('');
   }
 
-  // واجهة عائمة
+  // واجهة عائمة — أيقونتين صغيرين: واحدة Paste/حل وواحدة Copy
   const aiBox = document.createElement('div');
-  aiBox.style.cssText = 'position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:2147483647;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+  aiBox.style.cssText = 'position:fixed;right:8px;top:50%;transform:translateY(-50%);z-index:2147483647;display:flex;flex-direction:column;gap:6px;pointer-events:none;';
 
   function createFloatingBtn(icon, bgColor, tooltip) {
     const btn = document.createElement('button');
     btn.innerHTML = icon;
     btn.title = tooltip;
-    btn.style.cssText = `width:45px;height:45px;border-radius:50%;border:none;background:${bgColor};color:white;cursor:pointer;font-size:22px;box-shadow:0 4px 12px rgba(0,0,0,0.3);pointer-events:auto;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;`;
-    btn.onmouseover = () => { btn.style.transform = 'scale(1.1)'; };
+    btn.style.cssText = `width:32px;height:32px;border-radius:50%;border:none;background:${bgColor};color:white;cursor:pointer;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.25);pointer-events:auto;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;`;
+    btn.onmouseover = () => { btn.style.transform = 'scale(1.08)'; };
     btn.onmouseout = () => { btn.style.transform = 'scale(1)'; };
     return btn;
   }
 
-  const solveBtn = createFloatingBtn('🤖', '#4A90E2', 'حل السؤال (المحدد أو المنسوخ)');
+  const solveBtn = createFloatingBtn('📥', '#4A90E2', 'لصق وحل السؤال');
   const copyBtn = createFloatingBtn('📋', '#2ecc71', 'نسخ الإجابة');
   copyBtn.style.display = 'none';
 
@@ -105,20 +105,20 @@
         solveBtn.innerHTML = '✅';
         copyBtn.style.display = 'flex';
         try { await navigator.clipboard.writeText(savedAnswer); } catch (e) { /* تجاهل */ }
-        setTimeout(() => { solveBtn.innerHTML = '🤖'; }, 2000);
+        setTimeout(() => { solveBtn.innerHTML = '📥'; }, 2000);
       } else if (response.status === 401) {
         alert('السيرفر محمي بتوكن. افتح الإضافة ← الإعدادات وأدخل التوكن.');
         solveBtn.innerHTML = '❌';
-        setTimeout(() => { solveBtn.innerHTML = '🤖'; }, 2000);
+        setTimeout(() => { solveBtn.innerHTML = '📥'; }, 2000);
       } else {
         alert('Error: ' + (data.error || ('HTTP ' + response.status)));
         solveBtn.innerHTML = '❌';
-        setTimeout(() => { solveBtn.innerHTML = '🤖'; }, 2000);
+        setTimeout(() => { solveBtn.innerHTML = '📥'; }, 2000);
       }
     } catch (e) {
       const cfg = await getConfig();
       alert(`تعذر الاتصال بالسيرفر (${cfg.backendUrl}).\n1) تأكد أنه شغال\n2) افتح الإضافة ← الإعدادات وتأكد من رابط السيرفر`);
-      solveBtn.innerHTML = '🤖';
+      solveBtn.innerHTML = '📥';
     }
   };
 
