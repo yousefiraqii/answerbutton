@@ -11,7 +11,8 @@ const app = express();
 app.set('trust proxy', 1);
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const DATA_DIR = process.env.DATA_DIR || __dirname;
+// على Vercel الكتابة مسموحة في /tmp فقط — محلياً يبقى في مجلد المشروع
+const DATA_DIR = process.env.DATA_DIR || (process.env.VERCEL ? '/tmp' : __dirname);
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 const ADMIN_TOKEN = (process.env.ADMIN_TOKEN || '').trim();
@@ -406,10 +407,14 @@ app.use((err, req, res, next) => {
   next();
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
-  console.log(`📄 Settings: http://localhost:${PORT}/settings.html`);
-  console.log(`🔑 API key: ${(process.env.GROQ_API_KEY || process.env.API_KEY) ? 'from ENV ✔' : 'from settings file (or missing)'}`);
-  console.log(`🔒 Admin token: ${ADMIN_TOKEN ? 'enabled ✔' : 'disabled (set ADMIN_TOKEN to protect settings)'}`);
-  console.log(`💾 Data dir: ${DATA_DIR}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
+    console.log(`📄 Settings: http://localhost:${PORT}/settings.html`);
+    console.log(`🔑 API key: ${(process.env.GROQ_API_KEY || process.env.API_KEY) ? 'from ENV ✔' : 'from settings file (or missing)'}`);
+    console.log(`🔒 Admin token: ${ADMIN_TOKEN ? 'enabled ✔' : 'disabled (set ADMIN_TOKEN to protect settings)'}`);
+    console.log(`💾 Data dir: ${DATA_DIR}`);
+  });
+}
+
+module.exports = app;
