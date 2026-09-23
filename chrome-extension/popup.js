@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.getElementById('status');
 
   chrome.storage.sync.get(
-    { backendUrl: 'http://localhost:3000', backendToken: '' },
+    { backendUrl: 'https://answerbutton.vercel.app', backendToken: '' },
     (cfg) => {
       urlInput.value = cfg.backendUrl;
       tokenInput.value = cfg.backendToken;
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById('saveBtn').addEventListener('click', () => {
-    const backendUrl = urlInput.value.trim().replace(/\/$/, '') || 'http://localhost:3000';
+    const backendUrl = urlInput.value.trim().replace(/\/$/, '') || 'https://answerbutton.vercel.app';
     const backendToken = tokenInput.value.trim();
     chrome.storage.sync.set({ backendUrl, backendToken }, () => {
       setStatus('✅ اتحفظ', true);
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('testBtn').addEventListener('click', async () => {
-    const backendUrl = urlInput.value.trim().replace(/\/$/, '') || 'http://localhost:3000';
+    const backendUrl = urlInput.value.trim().replace(/\/$/, '') || 'https://answerbutton.vercel.app';
     setStatus('⏳ بجرب الاتصال...');
     try {
       const controller = new AbortController();
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('settingsBtn').addEventListener('click', () => {
-    const backendUrl = urlInput.value.trim().replace(/\/$/, '') || 'http://localhost:3000';
+    const backendUrl = urlInput.value.trim().replace(/\/$/, '') || 'https://answerbutton.vercel.app';
     chrome.tabs.create({ url: `${backendUrl}/settings.html` });
   });
 });

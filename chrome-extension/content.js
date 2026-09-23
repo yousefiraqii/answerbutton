@@ -3,7 +3,7 @@
   if (window.__answerButtonInjected) return;
   window.__answerButtonInjected = true;
 
-  const DEFAULT_BACKEND = 'http://localhost:3000';
+  const DEFAULT_BACKEND = 'https://answerbutton.vercel.app';
 
   function getConfig() {
     return new Promise((resolve) => {
