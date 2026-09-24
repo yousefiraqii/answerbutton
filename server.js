@@ -195,6 +195,12 @@ function extractWordLimit(question) {
   return null;
 }
 
+function isCapstoneQuestion(question) {
+  const keywords = ['collaborat', 'team', 'design requirement', 'prototype', 'edp', 'engineering design process', 'capstone', 'reflection', 'learning transfer', 'view group', 'list view', 'grid view', 'aquaculture', 'aquaponics', 'agriculture', 'actuator', 'sensor', 'electrochemical', 'electrolytic', 'redox', 'nernst', 'tds', 'orp', 'lo ', 'ch.', 'interface', 'monitoring', 'readiness', 'cornerstone', 'prototyping'];
+  const lowerQ = question.toLowerCase();
+  return keywords.some(k => lowerQ.includes(k));
+}
+
 function isConnectionsQuestion(question) {
   const keywords = ['connection', 'law', 'equation', 'formula', 'substitution', 'physics', 'force', 'energy', 'motion', 'newton', 'acceleration', 'velocity', 'mass', 'work', 'power', 'momentum', 'rotation', 'torque', 'resistance', 'current', 'voltage', 'capacitance', 'inductance', 'field', 'wave', 'frequency', 'wavelength', 'refraction', 'diffraction', 'interference', 'kinematics', 'dynamics', 'thermodynamics', 'entropy', 'enthalpy', 'pressure', 'volume', 'temperature', 'ohm', 'kirchhoff', 'coulomb', 'ampere', 'farad', 'henry', 'tesla', 'weber', 'joule', 'watt', 'pascal', 'newton', 'kinetic', 'potential'];
   const lowerQ = question.toLowerCase();
@@ -202,7 +208,8 @@ function isConnectionsQuestion(question) {
 }
 
 function buildSystemPrompt(settings, question) {
-  const isConn = isConnectionsQuestion(question);
+  const isCapstone = isCapstoneQuestion(question);
+  const isConn = !isCapstone && isConnectionsQuestion(question);
   const userWordLimit = extractWordLimit(question);
 
   let lengthInstruction = '';
@@ -301,6 +308,31 @@ GRADER-EXPECTATION WRITING STYLE (what earns full credit):
   const customInstructions = (settings.instructions || '').trim();
   const customBlock = customInstructions ? `\n---\nCUSTOM USER INSTRUCTIONS (must follow unless conflicting with word limit):\n${customInstructions}\n` : '';
 
+  // ---- Capstone / reflection template (matches user reference format) ----
+  if (isCapstone) {
+    return `You are a STEM student writing a capstone portfolio answer. Match this EXACT reference format:
+
+FORMAT (mandatory):
+Line 1: Category label only (e.g. Personal Reflection/Team Collaboration, Using the Engineering Design Process (EDP), Learning Transfer)
+Line 2-3: 1-2 sentence project-grounded intro mentioning YOUR prototype (aquaponics/aquaculture, 10 L system, sensors/actuators, capstone document).
+Then a blank line.
+Then: HOW ... heading in ALL CAPS describing the mechanism (e.g. HOW COLLABORATION HELPED SELECT DESIGN REQUIREMENTS, HOW DESIGN REQUIREMENTS GUIDE THE DESIGN PHASE, HOW VIEW GROUP TOOLS HELP DESIGN THE MONITORING INTERFACE, HOW ELECTROCHEMICAL CELL KNOWLEDGE IMPROVED OUR PROTOTYPE).
+Then numbered points exactly like: 1- TITLE IN CAPS
+Each point = title line + 3-5 sentences with: concept + concrete detail (names, numbers, constraints, formulas) + ONE CAPS keyword emphasis (e.g. TEAM VERIFICATION, EVIDENCE-BASED ARGUMENTATION, SYSTEMS THINKING, FILTER, SCOPE CREEP, OBJECTIVE BENCHMARK, AT-A-GLANCE, REDOX BALANCE, CHEMISTRY-BASED APPROACH).
+If the question asks about skills/readiness, add a second HOW ... section for skills.
+If LO/CH learning-transfer: point 1 = concept, point 2 = concept, point 3 = PRACTICAL APPLICATION with thresholds and timing.
+End with practical tie-back to prototype. NEVER end with "In conclusion / To sum up / Overall".
+Voice: "We reviewed...", "I learned...", "I applied...", "We triggered...". Student English, clear, specific, no generic filler.
+Length: detailed = 230-270 words. Short = under 120. Medium = 135-165.
+
+${kbInstruction}
+
+---
+LENGTH COMMAND: ${lengthInstruction}
+LANGUAGE: ${(settings.language === 'ar') ? 'Natural Arabic' : 'Natural, fluent English'}
+${customBlock}`;
+  }
+
   return `You are a physics/engineering tutor writing model answers for examiners. Your output IS the mark scheme.
 
 ${kbInstruction}
@@ -349,14 +381,15 @@ app.post('/api/solve', rateLimit(30), async (req, res) => {
 
   const systemPrompt = buildSystemPrompt(settings, question);
   const hasKB = (settings.knowledgeBase || '').trim().length > 0;
-  const isConn = isConnectionsQuestion(question);
+  const isCapstoneRef = isCapstoneQuestion(question);
+  const isConn = !isCapstoneRef && isConnectionsQuestion(question);
   const wordLimit = extractWordLimit(question);
 
   const forceNote = `
 FINAL ENFORCEMENT:
 - ${wordLimit ? `HARD WORD LIMIT: ${wordLimit} words MAX` : `Length target: ${settings.answerLength === 'detailed' ? '250 words (±15)' : settings.answerLength === 'medium' ? '150 words (±15)' : '50 words max'}`}
 - ${hasKB ? 'Knowledge base is LAW — no outside facts' : 'No knowledge base — use scientific expertise'}
-- ${isConn ? 'Full grader-mode: Law → Equation → Given → Substitute → Calculate → Answer with units → Link to question' : 'Clear, direct, human scientific voice'}
+- ${isCapstoneRef ? 'Capstone reference format: Category label → intro → HOW... ALL-CAPS heading → 1- TITLE numbered points with concrete prototype details + CAPS emphasis → practical tie-back. No In conclusion.' : isConn ? 'Full grader-mode: Law → Equation → Given → Substitute → Calculate → Answer with units → Link to question' : 'Clear, direct, human scientific voice'}
 - Output ONLY the answer. No intro. No outro. No meta-commentary.`;
 
   try {

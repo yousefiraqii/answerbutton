@@ -4,3 +4,4 @@ settings.json
 uploads/
 *.log
 start-answerbutton.bat
+.vercel
