@@ -195,8 +195,15 @@ function extractWordLimit(question) {
   return null;
 }
 
+const DEFAULT_CHALLENGE_KB = `CAPSTONE CHALLENGE 2026-2027 — Grade 12 Semester 1 — IT and AI Applications (DEFAULT KNOWLEDGE, applies when no PDF uploaded).
+Theme: Communication, Sensing, Information, Informatics. Big Idea: AI-driven edge computing + IoT for industrial automation, educational robotics, or assistive medical technologies.
+Our prototype: Smart Helmet — AI + ICT + IoT system with sensing, wireless data transfer to cloud, advanced communication, AI platform.
+Design Requirements (must respect): at least 4 measurable requirements including response time and system accuracy + 2 additional measurable requirements; must use ICT, IoT, AI platforms; must contain hardware; datasets + rubric for ML/DL at exhibition; AI model accuracy >= 80% with evidence; sensor calibration documented; testable, operational, reliable, portable on exhibition day + hard copy logbooks.
+Constraints (must respect): whole system testable; Arduino NOT allowed (use advanced controllers e.g. Raspberry Pi / ESP32); must show output change as function of input change; lab equipment not removed; medical pathway: no hazards.
+RULE: All answers must tie theory to THIS Smart Helmet and THESE requirements/constraints. Do not use aquaculture/aquaponics/fish-tank examples unless the question explicitly asks for them.`;
+
 function isCapstoneQuestion(question) {
-  const keywords = ['collaborat', 'team', 'design requirement', 'prototype', 'edp', 'engineering design process', 'capstone', 'reflection', 'learning transfer', 'view group', 'list view', 'grid view', 'aquaculture', 'aquaponics', 'agriculture', 'actuator', 'sensor', 'electrochemical', 'electrolytic', 'redox', 'nernst', 'tds', 'orp', 'lo ', 'ch.', 'interface', 'monitoring', 'readiness', 'cornerstone', 'prototyping'];
+  const keywords = ['collaborat', 'team', 'design requirement', 'prototype', 'edp', 'engineering design process', 'capstone', 'reflection', 'learning transfer', 'view group', 'list view', 'grid view', 'interface', 'monitoring', 'readiness', 'cornerstone', 'prototyping', 'smart helmet', 'helmet', 'ai ', 'artificial intelligence', 'iot', 'ict', 'edge computing', 'response time', 'accuracy', 'calibration', 'dataset', 'raspberry', 'esp32', 'wireless', 'cloud', 'sensor', 'actuator', 'arrangement', 'es.', 'lo ', 'ch.', 'journal', 'blue'];
   const lowerQ = question.toLowerCase();
   return keywords.some(k => lowerQ.includes(k));
 }
@@ -231,22 +238,18 @@ function buildSystemPrompt(settings, question) {
     }
   }
 
-  const knowledgeBase = settings.knowledgeBase || '';
-  const hasKB = knowledgeBase.trim().length > 0;
+  const userKB = (settings.knowledgeBase || '').trim();
+  const effectiveKB = userKB || DEFAULT_CHALLENGE_KB;
+  const hasKB = effectiveKB.trim().length > 0;
+  const hasUserKB = userKB.length > 0;
 
-  let kbInstruction = '';
-  if (hasKB) {
-    kbInstruction = `
-KNOWLEDGE BASE (UPLOADED PDF) — PRIMARY AUTHORITY:
-${knowledgeBase}
-
-RULE: Every factual claim, law, equation, constant, or procedure MUST come from this knowledge base.
-- If asked for a law/equation: quote it verbatim from the knowledge base.
-- If knowledge base lacks the answer: say "Not covered in the provided material" — do NOT hallucinate.
-- Do not supplement with outside knowledge. The knowledge base IS your universe.`;
-  } else {
-    kbInstruction = 'NO KNOWLEDGE BASE ATTACHED — Answer from your scientific expertise. Apply grader-expectation rules strictly.';
-  }
+  let kbInstruction = `
+KNOWLEDGE BASE — PRIMARY AUTHORITY:
+${effectiveKB}
+RULE: Every answer must stay inside this challenge and our Smart Helmet. ${hasUserKB ? 'User PDF overrides the default challenge where they conflict.' : 'No PDF uploaded, so the default Smart Helmet challenge above IS the authority — do not ask for a PDF.'}
+- Use requirements/constraints above (response time, >=80% accuracy, calibration, no Arduino, testable/portable) whenever relevant.
+- Do NOT introduce aquaculture/fish-tank details unless the question asks for them.
+- Do NOT invent measurements, test results, or materials not in the question/knowledge.`;
 
   let connectionsInstruction = '';
   if (isConn) {
@@ -310,20 +313,21 @@ GRADER-EXPECTATION WRITING STYLE (what earns full credit):
 
   // ---- Capstone / reflection template (matches user reference format) ----
   if (isCapstone) {
-    return `You are a STEM student writing a capstone portfolio answer. Match this EXACT reference format:
+    return `You are a STEM student writing a high-scoring capstone journal answer (Blue level) for our Smart Helmet project. Follow these 13 rules strictly. Do NOT change the user's ideas or invent unsupported measurements/materials.
 
-FORMAT (mandatory):
-Line 1: Category label only (e.g. Personal Reflection/Team Collaboration, Using the Engineering Design Process (EDP), Learning Transfer)
-Line 2-3: 1-2 sentence project-grounded intro mentioning YOUR prototype (aquaponics/aquaculture, 10 L system, sensors/actuators, capstone document).
-Then a blank line.
-Then: HOW ... heading in ALL CAPS describing the mechanism (e.g. HOW COLLABORATION HELPED SELECT DESIGN REQUIREMENTS, HOW DESIGN REQUIREMENTS GUIDE THE DESIGN PHASE, HOW VIEW GROUP TOOLS HELP DESIGN THE MONITORING INTERFACE, HOW ELECTROCHEMICAL CELL KNOWLEDGE IMPROVED OUR PROTOTYPE).
-Then numbered points exactly like: 1- TITLE IN CAPS
-Each point = title line + 3-5 sentences with: concept + concrete detail (names, numbers, constraints, formulas) + ONE CAPS keyword emphasis (e.g. TEAM VERIFICATION, EVIDENCE-BASED ARGUMENTATION, SYSTEMS THINKING, FILTER, SCOPE CREEP, OBJECTIVE BENCHMARK, AT-A-GLANCE, REDOX BALANCE, CHEMISTRY-BASED APPROACH).
-If the question asks about skills/readiness, add a second HOW ... section for skills.
-If LO/CH learning-transfer: point 1 = concept, point 2 = concept, point 3 = PRACTICAL APPLICATION with thresholds and timing.
-End with practical tie-back to prototype. NEVER end with "In conclusion / To sum up / Overall".
-Voice: "We reviewed...", "I learned...", "I applied...", "We triggered...". Student English, clear, specific, no generic filler.
-Length: detailed = 230-270 words. Short = under 120. Medium = 135-165.
+1. ANSWER THE EXACT QUESTION: reuse the question's important words/phrases. If it asks for "two", give exactly two numbered points. No unrelated concepts.
+2. STRUCTURE: 1-2 sentence intro linking the studied concept to our Smart Helmet → blank line → HOW... heading in ALL CAPS → numbered points exactly like "1- TITLE IN CAPS" → short PRACTICAL APPLICATION tie-back. No filler, no "In conclusion / To sum up / Overall / This was a great experience".
+3. EXACT TERMINOLOGY: keep LO / EDP / concept words verbatim. If the question says "arrangement", repeat "arrangement" — never replace with setup/organization. Same for response time, system accuracy, calibration, ICT, IoT, AI platform, edge computing, wireless/cloud.
+4. SPECIFICITY (WHAT → WHY → EFFECT): never write vague lines like "made it stronger / was better / helped our design". Always: WHAT we did → WHY it works → EFFECT on the helmet.
+5. CAUSE-EFFECT LANGUAGE: use because, therefore, which resulted in, allowing, reducing, increasing, since, as a result in every major decision.
+6. CONCEPT → CONNECTION → PRACTICAL APPLICATION: brief concept, then link to helmet, then exactly how we applied it (sensor choice, placement, model, test on exhibition day).
+7. STUDENT VOICE: "We reviewed...", "I learned...", "I applied...", "We selected...". Demonstrate understanding through helmet specifics, no exaggerated claims.
+8. BLUE-LEVEL EXTRA (only if supported by question/knowledge): add one practical detail — rejected alternative, constraint (no Arduino / testable-portable / >=80% accuracy / calibration / no hazards), fabrication ease, or efficiency gain. Never invent numbers.
+9. PRECISION: replace generic claims with evidence from question/challenge (e.g. parallel sensor layout shares load → larger effective area → better bending resistance).
+10. STYLE: concise intro, caps heading, numbered points, technical-but-clear English, direct LO link, cause-effect reasoning.
+11. NO OVEREXPLAIN: only the concept needed to answer + connect to helmet.
+12. TARGET: Blue-quality journal, not just correct grammar.
+13. FINAL SELF-CHECK: all parts answered? correct number of points? keywords present? LO connected? cause→effect in each point? practical application specific? no invented facts? no repetition?
 
 ${kbInstruction}
 
@@ -380,7 +384,7 @@ app.post('/api/solve', rateLimit(30), async (req, res) => {
   }
 
   const systemPrompt = buildSystemPrompt(settings, question);
-  const hasKB = (settings.knowledgeBase || '').trim().length > 0;
+  const hasUserKB = (settings.knowledgeBase || '').trim().length > 0;
   const isCapstoneRef = isCapstoneQuestion(question);
   const isConn = !isCapstoneRef && isConnectionsQuestion(question);
   const wordLimit = extractWordLimit(question);
@@ -388,8 +392,8 @@ app.post('/api/solve', rateLimit(30), async (req, res) => {
   const forceNote = `
 FINAL ENFORCEMENT:
 - ${wordLimit ? `HARD WORD LIMIT: ${wordLimit} words MAX` : `Length target: ${settings.answerLength === 'detailed' ? '250 words (±15)' : settings.answerLength === 'medium' ? '150 words (±15)' : '50 words max'}`}
-- ${hasKB ? 'Knowledge base is LAW — no outside facts' : 'No knowledge base — use scientific expertise'}
-- ${isCapstoneRef ? 'Capstone reference format: Category label → intro → HOW... ALL-CAPS heading → 1- TITLE numbered points with concrete prototype details + CAPS emphasis → practical tie-back. No In conclusion.' : isConn ? 'Full grader-mode: Law → Equation → Given → Substitute → Calculate → Answer with units → Link to question' : 'Clear, direct, human scientific voice'}
+- ${hasUserKB ? 'User knowledge base is LAW — no outside facts' : 'Smart Helmet challenge is LAW — tie every claim to helmet requirements/constraints, no PDF needed'}
+- ${isCapstoneRef ? 'Blue-level journal: exact question words, exact count of points, WHAT->WHY->EFFECT with because/therefore/allowing, CONCEPT->CONNECTION->APPLICATION, Smart Helmet specifics, no invented numbers, no In conclusion.' : isConn ? 'Full grader-mode: Law → Equation → Given → Substitute → Calculate → Answer with units → Link to question' : 'Clear, direct, human scientific voice'}
 - Output ONLY the answer. No intro. No outro. No meta-commentary.`;
 
   try {
